@@ -1,9 +1,10 @@
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET all todos
 export async function GET() {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('todo')
       .select('*')
@@ -25,6 +26,7 @@ export async function GET() {
 // POST create a new todo
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient()
     const body = await request.json()
     const { title } = body
 

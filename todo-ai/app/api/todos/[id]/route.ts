@@ -1,16 +1,17 @@
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 // GET a single todo
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params
+    const { id } = await params
+    const supabase = getSupabaseClient()
 
     const { data, error } = await supabase
       .from('todo')
@@ -37,7 +38,8 @@ export async function GET(request: NextRequest, { params }: Params) {
 // PUT update a todo
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params
+    const { id } = await params
+    const supabase = getSupabaseClient()
     const body = await request.json()
     const { title, completed } = body
 
@@ -73,7 +75,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
 // DELETE a todo
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params
+    const { id } = await params
+    const supabase = getSupabaseClient()
 
     const { error } = await supabase.from('todo').delete().eq('id', id)
 
