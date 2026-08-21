@@ -20,6 +20,25 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Clerk JWT + Supabase Setup
+
+This app uses Clerk authentication and passes a Clerk JWT to Supabase from API routes.
+
+1. In Clerk Dashboard, create a JWT template named `supabase`.
+2. Add any claims required by your Supabase RLS policies.
+3. Optionally set `CLERK_SUPABASE_JWT_TEMPLATE` in `.env.local` if your template name is different.
+
+Required environment variables:
+
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
+CLERK_SECRET_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
+# Optional (defaults to "supabase")
+CLERK_SUPABASE_JWT_TEMPLATE=supabase
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
