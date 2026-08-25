@@ -7,7 +7,7 @@ export default function CalendarPage() {
       <main className="flex flex-col items-center gap-6 w-full">
         <Link
           href="/"
-          className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+          className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
         >
           ← Back to To-Do
         </Link>

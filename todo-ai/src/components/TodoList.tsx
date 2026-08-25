@@ -5,6 +5,7 @@ interface Todo {
   id: string;
   title: string;
   completed: boolean;
+  due_date?: string | null;
 }
 
 interface TodoListProps {
@@ -31,6 +32,7 @@ export default function TodoList({
             id={todo.id}
             title={todo.title}
             completed={todo.completed}
+            dueDate={todo.due_date}
             onToggle={onToggleTodo}
             onDelete={onDeleteTodo}
           />

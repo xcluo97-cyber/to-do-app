@@ -4,6 +4,7 @@ interface TodoItemProps {
   id: string;
   title: string;
   completed: boolean;
+  dueDate?: string | null;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -12,6 +13,7 @@ export default function TodoItem({
   id,
   title,
   completed,
+  dueDate,
   onToggle,
   onDelete,
 }: TodoItemProps) {
@@ -25,15 +27,22 @@ export default function TodoItem({
         onChange={() => onToggle(id)}
         className="w-5 h-5 text-primary-600 cursor-pointer"
       />
-      <span
-        className={`flex-1 ${
-          completed
-            ? "line-through text-gray-500"
-            : "text-gray-800"
-        }`}
-      >
-        {title}
-      </span>
+      <div className="flex-1">
+        <p
+          className={`${
+            completed
+              ? "line-through text-gray-500"
+              : "text-gray-800"
+          }`}
+        >
+          {title}
+        </p>
+        {dueDate && (
+          <p className="text-xs text-gray-500">
+            Due: {dueDate}
+          </p>
+        )}
+      </div>
       <button
         onClick={() => onDelete(id)}
         className="text-red-600 hover:text-red-700 font-bold transition-colors"

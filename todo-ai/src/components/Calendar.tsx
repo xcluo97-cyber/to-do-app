@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
 
 interface Todo {
-  id: number;
-  text: string;
+  id: string;
+  title: string;
   completed: boolean;
-  dueDate: string | null;
+  due_date: string | null;
 }
 
 interface CalendarDay {
@@ -17,17 +18,53 @@ interface CalendarDay {
 }
 
 export default function Calendar() {
+  const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [todos, setTodos] = useState<Todo[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  // Load todos from localStorage
   useEffect(() => {
-    const savedTodos = localStorage.getItem("todos");
-    if (savedTodos) {
-      setTodos(JSON.parse(savedTodos));
+    if (!isAuthLoaded) {
+      return;
     }
-  }, []);
+
+    if (!isSignedIn) {
+      setTodos([]);
+      return;
+    }
+
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch("/api/todos");
+        if (response.ok) {
+          const data = await response.json();
+          setTodos(data);
+        } else if (response.status === 401) {
+          setTodos([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch todos for calendar:", error);
+      }
+    };
+
+    fetchTodos();
+  }, [isAuthLoaded, isSignedIn]);
+
+  const getDateKey = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDueDate = (date: string) => {
+    const [year, month, day] = date.split("-").map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
@@ -38,8 +75,8 @@ export default function Calendar() {
   };
 
   const getTasksForDate = (date: Date): Todo[] => {
-    const dateString = date.toISOString().split("T")[0];
-    return todos.filter((todo) => todo.dueDate === dateString && !todo.completed);
+    const dateString = getDateKey(date);
+    return todos.filter((todo) => todo.due_date === dateString && !todo.completed);
   };
 
   const getCalendarDays = (): CalendarDay[] => {
@@ -169,7 +206,7 @@ export default function Calendar() {
               }`}
               onClick={() => {
                 if (day.fullDate) {
-                  setSelectedDate(day.fullDate.toISOString().split("T")[0]);
+                  setSelectedDate(getDateKey(day.fullDate));
                 }
               }}
             >
@@ -181,9 +218,14 @@ export default function Calendar() {
                   {tasksForDay.slice(0, 2).map((task) => (
                     <div
                       key={task.id}
-                      className="text-xs bg-primary-500 text-white rounded px-2 py-1 truncate"
+                      className="bg-black text-white rounded px-2 py-1"
                     >
-                      {task.text}
+                      <p className="text-xs truncate">{task.title}</p>
+                      {task.due_date && (
+                        <p className="text-[10px] leading-tight opacity-90">
+                          {formatDueDate(task.due_date)}
+                        </p>
+                      )}
                     </div>
                   ))}
                   {tasksForDay.length > 2 && (
@@ -206,16 +248,19 @@ export default function Calendar() {
           </h3>
           <div className="space-y-2">
             {todos
-              .filter((todo) => todo.dueDate === selectedDate && !todo.completed)
+              .filter((todo) => todo.due_date === selectedDate && !todo.completed)
               .map((task) => (
                 <div
                   key={task.id}
                   className="p-2 bg-white rounded border-l-4 border-primary-500 text-gray-800"
                 >
-                  {task.text}
+                  <p>{task.title}</p>
+                  {task.due_date && (
+                    <p className="text-xs text-gray-500">Due: {task.due_date}</p>
+                  )}
                 </div>
               ))}
-            {todos.filter((todo) => todo.dueDate === selectedDate && !todo.completed).length === 0 && (
+            {todos.filter((todo) => todo.due_date === selectedDate && !todo.completed).length === 0 && (
               <p className="text-gray-500">No tasks for this date</p>
             )}
           </div>

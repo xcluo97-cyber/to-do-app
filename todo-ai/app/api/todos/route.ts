@@ -86,12 +86,20 @@ export async function POST(request: NextRequest) {
     const { supabase, userId } = authContext
 
     const body = await request.json()
-    const { title } = body
+    const { title, due_date } = body
 
     if (!title) {
       console.warn('[todos][POST] validation failed: missing title')
       return NextResponse.json(
         { error: 'Title is required' },
+        { status: 400 }
+      )
+    }
+
+    if (due_date && typeof due_date !== 'string') {
+      console.warn('[todos][POST] validation failed: due_date must be string or null')
+      return NextResponse.json(
+        { error: 'Due date must be a date string (YYYY-MM-DD) or null' },
         { status: 400 }
       )
     }
@@ -105,6 +113,7 @@ export async function POST(request: NextRequest) {
           title,
           completed: false,
           user_id: userId,
+          due_date: due_date || null,
         },
       ])
       .select()

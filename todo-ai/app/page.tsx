@@ -1,40 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
-import { TodoInput, TodoList, TodoStats } from "@/src/components";
+import { TodoInput, TodoList, TodoStats, TodoChatBox } from "@/src/components";
 
 interface Todo {
   id: string;
   title: string;
   completed: boolean;
+  due_date?: string | null;
 }
 
 export default function Home() {
+  const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [dueDate, setDueDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchTodos();
-  }, []);
-
-  const fetchTodos = async () => {
+  const fetchTodos = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch("/api/todos");
       if (response.ok) {
         const data = await response.json();
         setTodos(data);
+      } else if (response.status === 401) {
+        setTodos([]);
       }
     } catch (error) {
       console.error("Failed to fetch todos:", error);
     } finally {
       setIsLoading(false);
-      setIsLoaded(true);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthLoaded) {
+      return;
+    }
+
+    if (isSignedIn) {
+      fetchTodos();
+    } else {
+      setTodos([]);
+      setIsLoading(false);
+    }
+  }, [isAuthLoaded, isSignedIn, fetchTodos]);
 
   const addTodo = async () => {
     if (input.trim()) {
@@ -44,13 +57,17 @@ export default function Home() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ title: input }),
+          body: JSON.stringify({
+            title: input,
+            due_date: dueDate || null,
+          }),
         });
 
         if (response.ok) {
           const newTodo = await response.json();
           setTodos([newTodo, ...todos]);
           setInput("");
+          setDueDate("");
         }
       } catch (error) {
         console.error("Failed to add todo:", error);
@@ -111,7 +128,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Link
               href="/calendar"
-              className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+              className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
             >
               📅 Calendar
             </Link>
@@ -125,6 +142,8 @@ export default function Home() {
         <TodoInput
           input={input}
           onInputChange={setInput}
+          dueDate={dueDate}
+          onDueDateChange={setDueDate}
           onAddTodo={addTodo}
           onKeyPress={handleKeyPress}
         />
@@ -133,6 +152,12 @@ export default function Home() {
           todos={todos}
           onToggleTodo={toggleTodo}
           onDeleteTodo={deleteTodo}
+        />
+
+        <TodoChatBox
+          onTodoCreated={(todo) => {
+            setTodos((prev) => [todo, ...prev]);
+          }}
         />
 
         {todos.length > 0 && (
