@@ -16,7 +16,6 @@ export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch todos from API on mount
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -74,9 +73,7 @@ export default function Home() {
 
       if (response.ok) {
         const updatedTodo = await response.json();
-        setTodos(
-          todos.map((t) => (t.id === id ? updatedTodo : t))
-        );
+        setTodos(todos.map((t) => (t.id === id ? updatedTodo : t)));
       }
     } catch (error) {
       console.error("Failed to toggle todo:", error);
@@ -108,18 +105,20 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#f0fdf4] to-[#dcfce7] py-8 px-4">
       <main className="w-full max-w-md bg-white rounded-lg shadow-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold text-gray-800">
-            My To-Do List
-          </h1>
-          <Link
-            href="/calendar"
-            className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium text-sm"
-          >
-            📅 Calendar
-          </Link>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h1 className="text-3xl font-bold text-gray-800">My To-Do List</h1>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/calendar"
+              className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+            >
+              📅 Calendar
+            </Link>
+          </div>
         </div>
-        <p className="text-center text-sm text-gray-600 mb-6">
+
+        <p className="mb-6 text-center text-sm text-gray-600">
           {completedCount} of {todos.length} completed
         </p>
 
