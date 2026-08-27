@@ -12,12 +12,14 @@ interface TodoListProps {
   todos: Todo[];
   onToggleTodo: (id: string) => void;
   onDeleteTodo: (id: string) => void;
+  onUpdateTodo: (id: string, updates: { title?: string; due_date?: string | null }) => void;
 }
 
 export default function TodoList({
   todos,
   onToggleTodo,
   onDeleteTodo,
+  onUpdateTodo,
 }: TodoListProps) {
   return (
     <div className="space-y-2">
@@ -35,6 +37,7 @@ export default function TodoList({
             dueDate={todo.due_date}
             onToggle={onToggleTodo}
             onDelete={onDeleteTodo}
+            onUpdate={onUpdateTodo}
           />
         ))
       )}

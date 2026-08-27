@@ -95,13 +95,14 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const { supabase, userId } = authContext
 
     const body = await request.json()
-    const { title, completed } = body
+    const { title, completed, due_date } = body
 
     console.info('[todos:id][PUT] updating todo in Supabase', {
       userId,
       id,
       hasTitle: title !== undefined,
       hasCompleted: completed !== undefined,
+      hasDueDate: due_date !== undefined,
     })
 
     const { data, error } = await supabase
@@ -109,6 +110,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       .update({
         ...(title !== undefined && { title }),
         ...(completed !== undefined && { completed }),
+        ...(due_date !== undefined && { due_date }),
       })
       .eq('id', id)
       .eq('user_id', userId)

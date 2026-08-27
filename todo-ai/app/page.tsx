@@ -97,6 +97,28 @@ export default function Home() {
     }
   };
 
+  const updateTodo = async (
+    id: string,
+    updates: { title?: string; due_date?: string | null }
+  ) => {
+    try {
+      const response = await fetch(`/api/todos/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        const updatedTodo = await response.json();
+        setTodos((prev) => prev.map((todo) => (todo.id === id ? updatedTodo : todo)));
+      }
+    } catch (error) {
+      console.error("Failed to update todo:", error);
+    }
+  };
+
   const deleteTodo = async (id: string) => {
     try {
       const response = await fetch(`/api/todos/${id}`, {
@@ -152,11 +174,18 @@ export default function Home() {
           todos={todos}
           onToggleTodo={toggleTodo}
           onDeleteTodo={deleteTodo}
+          onUpdateTodo={updateTodo}
         />
 
         <TodoChatBox
           onTodoCreated={(todo) => {
             setTodos((prev) => [todo, ...prev]);
+          }}
+          onTodoUpdated={(todo) => {
+            setTodos((prev) => prev.map((item) => (item.id === todo.id ? todo : item)));
+          }}
+          onTodoDeleted={(id) => {
+            setTodos((prev) => prev.filter((todo) => todo.id !== id));
           }}
         />
 
